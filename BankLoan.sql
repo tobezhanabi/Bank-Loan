@@ -202,3 +202,29 @@ where Month(issue_date) = 11 and Year(issue_date) = 2021)
 
 select (MTD.MTD_Total_amount_received - PMTD.PMTD_Total_amount_received)* 100.00 /PMTD.PMTD_Total_amount_received
 as MOM_Total_amount_funded from MTD_payment MTD, PMTD_payment PMTD
+
+-- cal the avg int rate
+select AVG(int_rate)*100 AS Avg_interest_rate from bankloan.dbo.financial_loan_raw
+
+-- cal the MTD avg Int rate
+ select AVG(int_rate)*100 AS MTD_Avg_interest_rate from bankloan.dbo.financial_loan_raw
+where month(issue_date)= 12 and Year(issue_date) =2021
+
+--cal the pmtd avg int rate
+
+ select AVG(int_rate)*100 AS PMTD_Avg_interest_rate from bankloan.dbo.financial_loan_raw
+where month(issue_date)= 11 and Year(issue_date) =2021
+
+
+-- cal the month-over-month Avg int rate
+with MTD_avg_int as (
+select AVG(int_rate)*100 AS MTD_Avg_interest_rate from bankloan.dbo.financial_loan_raw
+where month(issue_date)= 12 and Year(issue_date) =2021)
+,
+PMTD_avg_int as(
+select AVG(int_rate)*100 AS PMTD_Avg_interest_rate from bankloan.dbo.financial_loan_raw
+where month(issue_date)= 11 and Year(issue_date) =2021)
+
+
+select (MTD.MTD_Avg_interest_rate - PMTD.PMTD_Avg_interest_rate)* 100.00 /PMTD.PMTD_Avg_interest_rate
+as MOM_Avg_interest_rate from MTD_avg_int MTD, PMTD_avg_int PMTD
