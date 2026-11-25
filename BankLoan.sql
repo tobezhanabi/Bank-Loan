@@ -228,3 +228,168 @@ where month(issue_date)= 11 and Year(issue_date) =2021)
 
 select (MTD.MTD_Avg_interest_rate - PMTD.PMTD_Avg_interest_rate)* 100.00 /PMTD.PMTD_Avg_interest_rate
 as MOM_Avg_interest_rate from MTD_avg_int MTD, PMTD_avg_int PMTD
+
+
+-- cal the avg debt to income ratio(DTI)
+
+select avg(dti) *100 as MTD_Avg_DTI from bankloan.dbo.financial_loan_raw
+
+-- cal the MTD dti
+select avg(dti) *100 as MTD_Avg_DTI from bankloan.dbo.financial_loan_raw
+where month(issue_date)= 12 and Year(issue_date) =2021
+-- cal the PMTD dti
+select avg(dti) *100 as PMTD_Avg_DTI from bankloan.dbo.financial_loan_raw
+where month(issue_date)= 11 and Year(issue_date) =2021
+
+-- cal the month-over-month total amount received
+with MTD_DTI as (
+select avg(dti) *100 as MTD_Avg_DTI
+from bankloan.dbo.financial_loan_raw
+where month(issue_date) = 12 and year(issue_date) = 2021),
+PMTD_DTI as(select avg(dti) *100 as PMTD_Avg_DTI
+from bankloan.dbo.financial_loan_raw
+where month(issue_date) = 11 and year(issue_date) = 2021)
+
+select (MTD.MTD_Avg_DTI - PMTD.PMTD_Avg_DTI)* 100.00 /PMTD.PMTD_Avg_DTI
+as MOM_Avg_DTI from MTD_DTI MTD, PMTD_DTI PMTD
+
+--cal the Good loan application percentage
+select (count(case when loan_status = 'Fully Paid' or loan_status = 'Current' then id END)*100)/count(id)
+as Good_loan_percentage 
+from bankloan.dbo.financial_loan_raw
+
+--cal the totaol good loan applocation
+select count(id)
+as Good_loan_application
+from bankloan.dbo.financial_loan_raw
+where loan_status= 'Fully Paid' or loan_status='Current'
+
+-- cal the good loan percentage fund
+select sum(loan_amount)
+as Good_loan_Funded_Amount
+from bankloan.dbo.financial_loan_raw
+where loan_status= 'Fully Paid' or loan_status='Current'
+
+-- cal the good loan percentage receive
+select sum(total_payment)
+as Good_loan_Amount_Received
+from bankloan.dbo.financial_loan_raw
+where loan_status= 'Fully Paid' or loan_status='Current'
+
+--bad loan
+
+--cal the bad loan application percentage
+select (count(case when loan_status = 'Charged Off' then id END)*100.0)/count(id)
+as Bad_loan_percentage 
+from bankloan.dbo.financial_loan_raw
+
+--cal the totaol good loan applocation
+select count(id)
+as Bad_loan_application
+from bankloan.dbo.financial_loan_raw
+where loan_status= 'Charged Off'
+
+--cal the Bad loan funded amount
+select sum(loan_amount)
+as Bad_loan_funded_amount
+from bankloan.dbo.financial_loan_raw
+where loan_status= 'Charged Off'
+
+--cal the loan count, total amount receieved, total funded amount, int rate. DTi
+-- on the basis of the loan status
+select
+loan_status,
+count(id) as Loan_Count,
+sum(total_payment) as Total_Amount_Received,
+sum(loan_amount) as Total_Funded_Amount,
+avg(int_rate * 100) as Interest_Rate,
+Avg(dti * 100) as DTI
+from bankloan.dbo.financial_loan_raw
+Group by loan_status
+
+-- cal MTD_total_amount_received, MTD_total_funded_amount on the base of loan_status
+select
+loan_status,
+sum(total_payment) as MTD_Total_Amount_Received,
+sum(loan_amount) as MTD_Total_funded_amount
+from
+bankloan.dbo.financial_loan_raw
+where month(issue_date) = 12  and year(issue_date) = 2021
+group by loan_status
+
+-- cal monthly total_loan application, total_funded_amount and Total_amount_received
+select 
+month(issue_date) as Month_Number,
+DATENAME(Month,issue_date) as Month_Name,
+Count(id) as Total_Loan_Application,
+Sum(loan_amount) as Total_Funded_Amount,
+sum(total_payment) as Total_Amount_Received
+from bankloan.dbo.financial_loan_raw
+group by month(issue_date), DateName(Month, issue_date)
+order by month(issue_date)
+
+--Bank Loan Report| overview - state
+
+select
+address_state as State,
+count(id) as total_loan_applications,
+sum(loan_amount) as total_funded_amount,
+sum(total_payment) as total_amount_received
+from bankloan.dbo.financial_loan_raw
+Group by address_state
+order by address_state
+
+--Bank Loan Report| overview - Term
+
+select
+term as Term,
+count(id) as total_loan_applications,
+sum(loan_amount) as total_funded_amount,
+sum(total_payment) as total_amount_received
+from bankloan.dbo.financial_loan_raw
+Group by term
+order by term
+
+--Bank Loan Report| overview - years employed
+
+select
+emp_length as Employee_Length,
+count(id) as total_loan_applications,
+sum(loan_amount) as total_funded_amount,
+sum(total_payment) as total_amount_received
+from bankloan.dbo.financial_loan_raw
+Group by emp_Length
+order by emp_Length
+
+--Bank Loan Report| overview - years employed
+
+select
+emp_length as Employee_Length,
+count(id) as total_loan_applications,
+sum(loan_amount) as total_funded_amount,
+sum(total_payment) as total_amount_received
+from bankloan.dbo.financial_loan_raw
+Group by emp_Length
+order by emp_Length
+
+--Bank Loan Report| overview - purpose
+
+select
+purpose as Purpose_Of_Loan,
+count(id) as total_loan_applications,
+sum(loan_amount) as total_funded_amount,
+sum(total_payment) as total_amount_received
+from bankloan.dbo.financial_loan_raw
+Group by purpose
+order by purpose
+
+--Bank Loan Report| overview - home ownership
+
+select
+home_ownership as Home_Ownership,
+count(id) as total_loan_applications,
+sum(loan_amount) as total_funded_amount,
+sum(total_payment) as total_amount_received
+from bankloan.dbo.financial_loan_raw
+Group by home_ownership
+order by home_ownership
